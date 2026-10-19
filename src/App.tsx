@@ -14,6 +14,8 @@ import Header from './components/Header';
 import PatternBackground from './components/PatternBackground';
 import NotificationToast from './components/NotificationToast';
 import PermissionsModal from './components/PermissionsModal';
+import LocationShiftBanner from './components/LocationShiftBanner';
+import { useLocationMonitor } from './hooks/useLocationMonitor';
 import HomePage from './pages/HomePage';
 import PrayerTimesPage from './pages/PrayerTimesPage';
 import SettingsPage from './pages/SettingsPage';
@@ -94,6 +96,12 @@ export default function App() {
     [settings, store],
   );
 
+  const locationMonitor = useLocationMonitor({
+    settings,
+    online,
+    onUpdateSettings: handleSaveSettings,
+  });
+
   const handleNavigate = useCallback(
     (p: PageKey) => {
       if (!settings && p !== 'settings') return;
@@ -132,6 +140,17 @@ export default function App() {
         />
 
         <main className="w-full flex-1 px-4 py-5">
+          {locationMonitor.pendingShift && effectivePage !== 'settings' && (
+            <div className="mb-4">
+              <LocationShiftBanner
+                shift={locationMonitor.pendingShift}
+                online={online}
+                onConfirm={locationMonitor.confirmShift}
+                onDismiss={locationMonitor.dismissShift}
+              />
+            </div>
+          )}
+
           {effectivePage === 'home' && settings && (
             <HomePage
               settings={settings}
